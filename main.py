@@ -1,61 +1,73 @@
-from random import randint
+from random import choice
+import sys
 
 
 def get_word_list(path):
-    wordlist = []
+    word_list = []
     with open(path) as f:
         for line in f:
             for word in line.split():
-                word.upper()
-                wordlist.append(word)
-        return wordlist
+                if '_' in word:
+                    print(f"Invalid input data: the word contains '_': {word}")
+                    continue
+                word = word.upper()
+                word_list.append(word)
+        return word_list
 
 
-def get_random_word(word_list=[]):
-    word = list(word_list[randint(0, len(word_list))])
-    return word
+def get_random_word(list_of_words):
+    if not list_of_words:
+        print("Error: empty list of words.")
+        exit(1)
+    random_word = choice(list_of_words)
+    charlist = list(random_word)
+    return charlist
 
 
-def display(word):
-    for letter in word:
-        print(letter, end=" ")
-    print()
+def display(charlist):
+    formatted = ' '.join(charlist)
+    print(formatted)
 
 
-def update_original(index, word=[]):
-    word[index] = "_"
-    return word
+def update_original(index, charlist):
+    charlist[index] = "_"
+    return charlist
 
 
-def update_to_guess(index, letter, word=[]):
-    word[index] = letter
-    return word
+def update_to_guess(index, letter, charlist):
+    charlist[index] = letter
+    return charlist
 
 
-path = input("Enter file path: ")
-word_list = get_word_list(path)
-original = get_random_word(word_list)
-to_guess = ""
-for i in range(len(original)):
-    to_guess = to_guess + "_"
-to_guess = list(to_guess)
+def main():
+    try:
+        path = sys.argv[1]
+        word_list = get_word_list(path)
+        original = get_random_word(word_list)
+        to_guess = "_" * len(original)
+        to_guess = list(to_guess)
 
-attempts = 3
-while attempts > 0 and '_' in to_guess:
-    display(to_guess)
-    letter = input("Enter a letter: ").upper()
-    if letter not in original:
-        attempts = attempts - 1
-        print("Miss! Attempts left:", attempts)
-        continue
-    else:
-        index = original.index(letter)
-        original = update_original(index, original)
-        to_guess = update_to_guess(index, letter, to_guess)
+        attempts_left = 3
+        while attempts_left > 0 and '_' in to_guess:
+            display(to_guess)
+            letter = input("Enter a letter: ").upper()
+            if letter not in original:
+                attempts_left = attempts_left - 1
+                print(f"Miss! Attempts left: {attempts_left}")
+            else:
+                index = original.index(letter)
+                original = update_original(index, original)
+                to_guess = update_to_guess(index, letter, to_guess)
 
-if attempts > 0:
-    display(to_guess)
-    print("Congrats! You've won.")
-else:
-    print("GAME OVER: 0 attempts left.")
-exit(0)
+        if attempts_left > 0:
+            display(to_guess)
+            print("Congrats! You've won.")
+        else:
+            print("GAME OVER: 0 attempts left.")
+    except IOError:
+        print("Invalid file path.")
+        exit(1)
+
+
+if __name__ == '__main__':
+    main()
